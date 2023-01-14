@@ -5,6 +5,7 @@ import { Routes, Route } from "react-router-dom";
 import ChatPage from './components/ChatPage/ChatPage';
 import LoginPage from './components/LoginPage/LoginPage';
 import RegisterPage from './components/RegisterPage/RegisterPage';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
