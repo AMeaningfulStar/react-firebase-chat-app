@@ -21,14 +21,13 @@ function App(props) {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         navigate("/");
-        dispatch(setUser(user));
 
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
-        // const uid = user.uid;
-        // ...
+        // 로그인한 user 정보를 redux에 저장
+        dispatch(setUser(user));
       } else {
         navigate("/login");
+
+        // 로그아웃 시 저장된 user 정보를 redux에서 지움
         dispatch(clearUser());
         // User is signed out
         // ...
