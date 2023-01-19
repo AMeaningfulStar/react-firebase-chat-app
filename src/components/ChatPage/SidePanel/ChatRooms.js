@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaRegSmileWink, FaPlus } from 'react-icons/fa';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -14,6 +14,7 @@ const ChatRooms = ({user}) => {
   const [ description, setDescription ] = useState('');
 
   const chatRoomsRef = ref(getDatabase(), 'chatRooms');
+  const [ chatRooms, setChatRooms ] = useState([]);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -43,19 +44,6 @@ const ChatRooms = ({user}) => {
       }
     }
 
-    const componentDidmount = () => {
-      AddChatRoomsListeners();
-    }
-
-    const AddChatRoomsListeners = () => {
-      let chatRoomsArray = [];
-
-      onChildAdded(chatRoomsRef, (DataSnapshot) => {
-        chatRoomsArray.push(DataSnapshot.val());
-        
-      })
-    }
-
     try{
       await update(child(chatRoomsRef, key), newChatRooms);
 
@@ -67,6 +55,29 @@ const ChatRooms = ({user}) => {
       alert(error);
     }
   }
+
+  useEffect(() => {
+    AddChatRoomsListeners();
+  },[]);
+
+  const AddChatRoomsListeners = () => {
+    let chatRoomsArray = [];
+
+    onChildAdded(chatRoomsRef, (DataSnapshot) => {
+      chatRoomsArray.push(DataSnapshot.val());
+      setChatRooms(chatRoomsArray);
+    })
+  }
+
+  const renderChatRooms = (chatRooms) => 
+    chatRooms.length > 0 &&
+    chatRooms.map((room) => (
+      <li
+        key={ room.id }
+      >
+        # { room.name }
+      </li>
+    ))
 
   return(
     <div>
@@ -80,8 +91,12 @@ const ChatRooms = ({user}) => {
           style={{ position: 'absolute', right: 0, cursor: 'pointer' }}
         />
       </div>
+      
+      <ul style={{ listStyleType: 'none', padding: 0 }}>
+        { renderChatRooms(chatRooms) }
+      </ul>
 
-       {/* ADD CHAT ROOM MODAL */}
+      {/* ADD CHAT ROOM MODAL */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Create a chat room</Modal.Title>
