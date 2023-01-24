@@ -3,18 +3,23 @@ import { FaRegSmileWink, FaPlus } from 'react-icons/fa';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setCurrentChatRoom, setPrivateChatRoom } from '../../../redux/actions/chatRoom_action';
 
-import { child, getDatabase, onChildAdded, push, ref, update } from "firebase/database";
+import { child, getDatabase, onChildAdded, push, ref, update , off } from "firebase/database";
 
-const ChatRooms = ({user}) => {
+const ChatRooms = () => {
   const [ show, setShow ] = useState(false);
-
   const [ name, setName ] = useState('');
   const [ description, setDescription ] = useState('');
+  const [ chatRooms, setChatRooms ] = useState([]);
+  const [ activeChatRoomId, setActiveChatRoomId ] = useState('');
+  const [ firstLoad, setFirstLoad ] = useState(true);
 
   const chatRoomsRef = ref(getDatabase(), 'chatRooms');
-  const [ chatRooms, setChatRooms ] = useState([]);
+  
+  const user = useSelector((state) => state.user.currentUser);
+  const dispatch =useDispatch();
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -30,7 +35,7 @@ const ChatRooms = ({user}) => {
 
   // 방 생성 시 방의 이름과 설명을 입력했는지 검사하는 함수
   const isFormValid = (name, description) => name && description;
-
+  
   // 방 생성 함수
   const addChatRoom = async() => {
     const key = push(chatRoomsRef).key;
@@ -58,26 +63,50 @@ const ChatRooms = ({user}) => {
 
   useEffect(() => {
     AddChatRoomsListeners();
+
+    return () => off(chatRoomsRef);
   },[]);
 
   const AddChatRoomsListeners = () => {
     let chatRoomsArray = [];
-
+    
     onChildAdded(chatRoomsRef, (DataSnapshot) => {
       chatRoomsArray.push(DataSnapshot.val());
       setChatRooms(chatRoomsArray);
+      setFirstChatRoom(chatRoomsArray);
     })
   }
 
-  const renderChatRooms = (chatRooms) => 
-    chatRooms.length > 0 &&
-    chatRooms.map((room) => (
-      <li
-        key={ room.id }
-      >
-        # { room.name }
-      </li>
-    ))
+  const renderChatRooms = (chatRooms) => {
+    if(chatRooms.length > 0){
+      return chatRooms.map((room) => (
+        <li
+          key={ room.id }
+          style={{ backgroundColor: room.id === activeChatRoomId && '#ffffff45'}}
+          onClick={() => changeChatRoom(room)}
+        >
+          # { room.name }
+        </li>
+      ))
+    }
+  }
+
+  const changeChatRoom = (room) => {
+    dispatch(setCurrentChatRoom(room));
+    dispatch(setPrivateChatRoom(false));
+    setActiveChatRoomId(room.id);
+  }
+
+  const setFirstChatRoom = (chatRooms) => {
+    const firstChatRoom = chatRooms[0];
+
+    if(firstLoad && chatRooms.length > 0){
+      dispatch(setCurrentChatRoom(firstChatRoom));
+      setActiveChatRoomId(firstChatRoom.id);
+    }
+
+    setFirstLoad(false);
+  }
 
   return(
     <div>
@@ -135,10 +164,4 @@ const ChatRooms = ({user}) => {
   )
 }
 
-const mapStateToProps = state => {
-  return{
-    user: state.user.currentUser
-  }
-}
-
-export default connect(mapStateToProps)(ChatRooms)
+export default ChatRooms
