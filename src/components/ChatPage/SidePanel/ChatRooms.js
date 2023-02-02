@@ -9,6 +9,7 @@ import { setCurrentChatRoom, setPrivateChatRoom } from '../../../redux/actions/c
 import { child, getDatabase, onChildAdded, push, ref, update , off } from "firebase/database";
 
 const ChatRooms = () => {
+  // ChatRooms 컴포넌트에서 사용되는 데이터의 저장 변수
   const [ show, setShow ] = useState(false);
   const [ name, setName ] = useState('');
   const [ description, setDescription ] = useState('');
@@ -21,6 +22,7 @@ const ChatRooms = () => {
   const user = useSelector((state) => state.user.currentUser);
   const dispatch =useDispatch();
 
+  // 모달창의 노출 여부를 결정하는 함수(handleClose, handleShow)
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -61,12 +63,14 @@ const ChatRooms = () => {
     }
   }
 
+  // ChatRoom들의 생성되었는지 감시하는 역할
   useEffect(() => {
     AddChatRoomsListeners();
 
     return () => off(chatRoomsRef);
   },[]);
 
+  // ChatRoom 생성되었을 시 동작하는 함수
   const AddChatRoomsListeners = () => {
     let chatRoomsArray = [];
     
@@ -77,6 +81,7 @@ const ChatRooms = () => {
     })
   }
 
+  // 생성된 ChatRoom을 UI에 나타내는 함수
   const renderChatRooms = (chatRooms) => {
     if(chatRooms.length > 0){
       return chatRooms.map((room) => (
@@ -91,12 +96,14 @@ const ChatRooms = () => {
     }
   }
 
+  // 생성된 ChatRoom 목록에서 선택 시 동작하는 이벤트 함수
   const changeChatRoom = (room) => {
     dispatch(setCurrentChatRoom(room));
     dispatch(setPrivateChatRoom(false));
     setActiveChatRoomId(room.id);
   }
 
+  // 화면이 처음 렌더링 될 시 ChatRoom 중 처음 ChatRoom이 선택되어 있도록 하는 함수
   const setFirstChatRoom = (chatRooms) => {
     const firstChatRoom = chatRooms[0];
 
