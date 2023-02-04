@@ -17,6 +17,7 @@ const MessageForm = () => {
   // Redux에 있는 정보
   const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
   const user = useSelector((state) => state.user.currentUser);
+  const isPrivateChatRoom = useSelector(state => state.chatRoom.isPrivateChatRoom);
 
   const handleChange = (event) => {
     setContent(event.target.value);
@@ -48,14 +49,14 @@ const MessageForm = () => {
   const createMessage = (fileUrl = null) => {
     // message 입력한 시간 및 user정보
     const message = {
-      timestamp: new Date(),
+      timestamp: Date.now(),
       user: {
         id: user.uid,
         name: user.displayName,
         image: user.photoURL
       }
     }
-
+    
     // file 및 message를 구분
     if( fileUrl !== null ){
       message['image'] = fileUrl;
@@ -72,7 +73,12 @@ const MessageForm = () => {
   }
 
   const getPath = () => {
-    return `/message/public`
+    if(isPrivateChatRoom) {
+      return `/message/private/${chatRoom.id}`;
+    }
+    else {
+      return `/message/public`
+    }
   }
 
   const handleUploadImage = (event) => {
@@ -89,7 +95,7 @@ const MessageForm = () => {
       // 파일이 저장되는 퍼센티지 구하기
       uploadTask.on('state_chaged',
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
           
           setPercentage(progress);
           switch (snapshot.state) {
@@ -143,7 +149,7 @@ const MessageForm = () => {
       </Form>
 
       { !(percentage === 0 || percentage === 100) &&
-        <ProgressBar variant="warning" label={`${ percentage }`} now={ percentage } />
+        <ProgressBar variant="warning" label={`${ percentage }%`} now={ percentage } />
       }
       
       <div>

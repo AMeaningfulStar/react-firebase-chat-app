@@ -59,7 +59,7 @@ const LoginPage = () => {
 
         <input type="submit" value={'login'} disabled={loading}/>
 
-        <Link style={{ color: 'gray', textDecoration: 'none' }} to="login">아직 아이디가 없다면... </Link>
+        <Link style={{ color: 'gray', textDecoration: 'none' }} to="/register">아직 아이디가 없다면... </Link>
       </form>
     </div>
   )
