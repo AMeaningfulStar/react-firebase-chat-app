@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
 import { Col, Form, ProgressBar, Row } from "react-bootstrap";
-import { child, getDatabase, push, ref, set } from "firebase/database";
+import { child, getDatabase, push, ref, remove, set } from "firebase/database";
 import { useSelector } from "react-redux";
 
-import { getStorage, ref as strRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref as strRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../../firebase";
 
 const MessageForm = () => {
@@ -13,6 +13,7 @@ const MessageForm = () => {
   const [ percentage, setPercentage ] = useState(0);
   const messagesRef = ref(getDatabase(), 'messages');
   const inputOpenImageRef = useRef();
+  const typingRef = ref(getDatabase(), 'typing');
 
   // Redux에 있는 정보
   const chatRoom = useSelector((state) => state.chatRoom.currentChatRoom);
@@ -35,6 +36,7 @@ const MessageForm = () => {
     try{
       await set(push(child(messagesRef, chatRoom.id)), createMessage());
 
+      await remove(child(typingRef, `${ chatRoom.id }/${ user.uid }`))
       setLoading(false);
       setContent('');
       setErrors([]);
@@ -135,11 +137,23 @@ const MessageForm = () => {
     }
   }
 
+  const handleKeyDown = (event) => {
+    if (content) {
+      set(ref(getDatabase(), `typing/${ chatRoom.id }/${ user.uid }`), {
+        userUid: user.displayName
+      })
+    }
+    else {
+      remove(ref(getDatabase(), `typing/${ chatRoom.id }/${ user.uid }`))
+    }
+  }
+
   return(
     <div>
       <Form onSubmit={ handleSubmit }>
         <Form.Group controlId="exampleForm.ControlTextarea1">
           <Form.Control
+            onKeyDown={handleKeyDown}
             value={ content }
             onChange={ handleChange }
             as="textarea"
