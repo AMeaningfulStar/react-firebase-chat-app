@@ -1,0 +1,54 @@
+{
+  "rules": {
+    "chatRooms" : { // chatRooms 데이터베이스 규칙
+      ".read": "auth != null", // 읽는 것은 로그인한 유저라면 가능
+      "$chatRoomId": { // chatRoom에 대한 데이터베이스 규칙
+        ".write": "auth != null", // 로그인한 유저라면 만들 수 있다 
+        ".validate": "newData.hasChildren([ 'id', 'name', 'createdBy', 'description'])", // chatRoom을 생성할 때 id, name, createdBy, description 정보가 있어야한다
+        "id": { // id는 chatRoomId와 동일해야한다
+          ".validate": "newData.val() === $chatRoomId"
+        },
+        "name": {	// name의 크기는 0이상이어야한다
+          ".validate": "newData.val().length > 0"
+        },
+        "description": { // description의 크기는 0이상이어야한다
+          ".validate": "newData.val().length > 0"
+        }
+      }
+    },
+    "messages": { // messages 데이터베이스 규칙
+      ".read": "auth != null", // 로그인한 유저라면 읽기 가능
+      ".write": "auth != null", // 로그인한 유저하면 쓰기 가능
+      "content": { // content의 크기는 0이상이어한다
+        ".validate": "newData.val().length > 0"
+      },
+      "image": { // image의 크기는 0이상이어야한다
+        ".validate": "newData.val().length > 0"
+      },
+      "user": { // 	user 정보 안에 id, name, image의 정보가 있어야한다
+        ".validate": "newData.hasChildren([ 'id', 'name', 'image'])"
+      }
+    },
+    "presence": { // presence 데이터베이스 규칙
+      ".read": "auth != null", // 로그인한 유저라면 읽기 가능
+      ".write": "auth != null", // 로그인한 유저하면 쓰기 가능
+    },
+    "typing": { // typing 데이터베이스 규칙
+      ".read": "auth != null", // 로그인한 유저라면 읽기 가능
+      ".write": "auth != null", // 로그인한 유저하면 쓰기 가능
+    },
+    "users": { // user 데이터베이스 규칙
+      ".read": "auth != null", // 로그인한 유저라면 읽기 가능
+      "$uid": { // user 데이터베이스 규칙
+        ".write": "auth != null && auth.uid == $uid",// 로그인한 유저이고 로그인한 uid가 같아야한다.
+        ".validate": "newData.hasChildren([ 'name', 'image'])", // user 정보 안에 name, image 정보가 있어야한다
+        "name": { // name의 크기는 0이상이어야한다
+          ".validate": "newData.val().length > 0"
+        },
+        "image": { // image의 크기는 0이상이어야한다
+          ".validate": "newData.val().length > 0"
+        }
+      }
+    }
+  }
+}
